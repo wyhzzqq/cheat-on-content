@@ -7,7 +7,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob, WebFetch, Skill
 
 # /cheat-trends — 热点抓取
 
-对标 [ARIS research-lit](https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/tree/main/skills/research-lit) 的多 adapter 模式。读 `trend-sources` adapter 的输出 → 去重 → 粗打分 → 写入 `candidates.md`。
+多 adapter 模式：读各 `trend-sources` adapter 的输出 → 去重 → 粗打分 → 写入 `candidates.md`。
 
 ## Overview
 
