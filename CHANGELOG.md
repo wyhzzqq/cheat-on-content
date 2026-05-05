@@ -23,6 +23,20 @@ All notable changes to cheat-on-content will be documented here.
 
 v0.1.0 用户的 state 是 schema 1.1。后续如果改字段语义、删字段、重命名等 → 没有迁移系统的话老用户 git pull 后会卡住。这套系统让"长期迭代不打断老用户"成为常态。
 
+### Fixed
+
+- **cheat-init `content_form` 存成字母 bug**：Phase 3 state JSON 模板用 `<Q1>` 抽象占位，导致 Claude 字面把 `"a"` 写进 state 文件而不是 enum `"opinion-video"`。修复：Q1/Q3/Q4/Q5 各加明确字母→enum 映射表 + Phase 3 模板加粗 warning。同时补全 7 个缺失的 `last_*` init 字段（之前靠 `state.get(field, default)` 兜底）+ `enabled_perf_adapters` 派生 + 强制 `initialized_at` 用本地 `+08:00` 时区不用 UTC `Z`
+
+### Changed — README 重写（v0.1.0 ship 后的定位调整）
+
+- 标题：英文 `Cheat on Content`，副标 `网红外挂`（之前 `网红作弊器`）
+- Tagline 直面"作弊"框架：「做内容本质上就是作弊——谁先看穿规律，谁就拿走流量」
+- 新增"那 ChatGPT / 豆包 / DeepSeek 不是也能干这个？"段——核心定位为"你自己的运营专家 + 自动进化"
+- 删早期产品警示段（badge + 本 CHANGELOG 已经在传达，重复就是不自信）
+- 砍 ARIS attribution（保留多 adapter 设计思路，去掉外部归功）
+- README 总长 330 行 → 90 行
+- cheat-init Phase 1 首屏文案同步重写：删方法论哲学，2 条 caveats（早期不准 + 强烈建议导对标）
+
 ### 余项
 
 - Step B：软化更多硬编码规则
