@@ -92,8 +92,22 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob, WebFetch, Skill
 > g) **混合**"
 
 记录到 `content_form` + `rubric_form_mismatch`。
-- 选 a → `rubric_form_mismatch: false`
-- 选 b/c/d/e/f/g → `rubric_form_mismatch: true`，cheat-status 持续提示"你的形态可能需要 bump 调权重"
+
+**Q1 → `content_form` enum 映射**（**必须存 enum 值，不是字母**）：
+
+| 用户答 | `content_form` 写入值 |
+|---|---|
+| a | `"opinion-video"` |
+| b | `"long-essay"` |
+| c | `"short-text"` |
+| d | `"podcast"` |
+| e | `"tutorial-builder"` |
+| f | `"other"` |
+| g | `"mixed"` |
+
+`rubric_form_mismatch` 派生：
+- 选 a → `false`
+- 选 b/c/d/e/f/g → `true`，cheat-status 持续提示"你的形态可能需要 bump 调权重"
 - **不再有"严重不匹配"档**——所有形态都能跑工作流，只是有的 rubric 需要更激进的 bump
 
 **Q1.5: 典型时长**（仅 Q1=a/d/f 时问）
@@ -163,7 +177,13 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob, WebFetch, Skill
 >    第一次 publish 之前装上就行（cheat-status 会持续提醒装）。
 >    装的指引在 adapters/perf-data/<platform>/README.md。"
 
-记录到 `data_collection`（manual / adapter）。
+**Q3 → `data_collection` enum 映射**：
+
+| 用户答 | `data_collection` 写入值 |
+|---|---|
+| a | `"manual"` |
+| b（默认） | `"adapter"` |
+
 默认推荐 b——除非用户明确说 "a 我就要手动"。
 
 **Q4: 候选选题**
@@ -173,7 +193,13 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob, WebFetch, Skill
 > b) 有，markdown 列表
 > c) 有，Notion / 其他"
 
-记录到 `pool_status`（none / markdown / notion）。
+**Q4 → `pool_status` enum 映射**：
+
+| 用户答 | `pool_status` 写入值 |
+|---|---|
+| a（默认） | `"none"` |
+| b | `"markdown"` |
+| c | `"notion"` |
 
 **Q5: 装几个 hook（默认装，不需要你决定）**
 
@@ -191,7 +217,13 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob, WebFetch, Skill
 >
 > 回 yes / no。"
 
-记录到 `hooks_installed`（true / false）。
+**Q5 → `hooks_installed` 映射**：
+
+| 用户答 | `hooks_installed` 写入值 |
+|---|---|
+| yes / enter / 默认 | `true`（bool，**不是字符串 `"yes"`**） |
+| no | `false` |
+
 默认 yes——除非用户明确说 no。
 
 ### Phase 2.5: 对标账号（**所有用户都问**，cold-start 强烈建议）
@@ -234,32 +266,39 @@ c) 不找 → state 标 `benchmark_status: none`，用通用 v0 起步
    "正在创建 .cheat-state.json — 各子 skill 共享上下文的地方。
     这次 init 收集的所有答案都会写在这里。"
    ```
-   写入：
+   写入（**所有 `<...>` 占位必须查上面 Q 的映射表换成具体 enum 值，绝不直接存字母**）：
    ```json
    {
      "schema_version": "1.1",
      "skill_version": "1.0.0",
      "rubric_version": "v0",
-     "content_form": "<Q1>",
-     "typical_duration_seconds": <Q1.5 派生>,
-     "target_publish_cadence_days": <Q1.6 派生>,
-     "rubric_form_mismatch": <Q1≠a 时 true>,
-     "benchmark_status": "<none/imported/pending 派生自 Phase 2.5 答案>",
-     "benchmark_name": <如有 imported 则名字字符串，否则 null>,
-     "benchmark_sample_count": <如有 imported 则数字，否则 0>,
+     "content_form": "<查 Q1 映射表，写 enum 字符串如 \"opinion-video\">",
+     "typical_duration_seconds": <Q1.5 派生：30/90/240/450/900>,
+     "target_publish_cadence_days": <Q1.6 派生：1/2/7/null>,
+     "rubric_form_mismatch": <Q1=a→false；其他→true>,
+     "benchmark_status": "<Phase 2.5 派生：a→\"imported\"/b→\"pending\"/c→\"none\">",
+     "benchmark_name": <imported 则字符串名，否则 null>,
+     "benchmark_sample_count": <imported 则数字，否则 0>,
      "baseline_plays": null,
-     "calibration_samples": <Q2=a 时 0；Q2=b 时 import 后回填或 Q2.3 估值>,
-     "data_collection": "<Q3>",
-     "pool_status": "<Q4>",
+     "calibration_samples": <Q2=a→0；Q2=b→Phase 3.5 import 回填或 Q2.3 估值>,
+     "data_collection": "<查 Q3 映射表，写 \"manual\" 或 \"adapter\">",
+     "pool_status": "<查 Q4 映射表，写 \"none\"/\"markdown\"/\"notion\">",
      "data_layer": "markdown",
-     "hooks_installed": <Q5>,
+     "hooks_installed": <查 Q5 映射表，写 bool true/false>,
      "enabled_trend_sources": ["manual-paste"],
-     "enabled_perf_adapters": [],
+     "enabled_perf_adapters": <Q2.1=a→[\"douyin-session\"]；b→[\"youtube-data-api\"]；c→[\"bilibili-stat\"]；其他→[]>,
+     "last_bump_at": null,
+     "last_bump_self_audited": false,
+     "last_published_at": null,
+     "last_published_file": null,
+     "last_retro_at": null,
+     "last_trends_run_at": null,
+     "last_trends_added_count": 0,
      "consecutive_directional_errors": [],
      "pending_retros": [],
      "shoots": [],
      "in_progress_session": null,
-     "initialized_at": "<ISO>"
+     "initialized_at": "<本地 ISO 8601 含时区，如 \"2026-05-05T20:11:13+08:00\"，**不要用 UTC 的 Z 后缀**>"
    }
    ```
 
@@ -425,7 +464,7 @@ cheat-learn-from 完成后回到 init 的 Phase 5。
 | `schema_version` | Phase 3 | 硬编码 "1.1" |
 | `skill_version` | Phase 3 | 硬编码 "1.0.0" |
 | `rubric_version` | Phase 3 | "v0" |
-| `content_form` | Phase 3 | Q1 |
+| `content_form` | Phase 3 | Q1 → 查映射表换 enum 值（**不是字母**） |
 | `typical_duration_seconds` | Phase 3 | Q1.5 派生 |
 | `target_publish_cadence_days` | Phase 3 | Q1.6 派生 |
 | `rubric_form_mismatch` | Phase 3 | Q1≠a → true |
@@ -434,7 +473,11 @@ cheat-learn-from 完成后回到 init 的 Phase 5。
 | `benchmark_sample_count` | Phase 3 / 2.5 | cheat-learn-from import 后回填 |
 | `baseline_plays` | Phase 3.5（如 import 成功） | import 数据中位数；否则 null |
 | `calibration_samples` | Phase 3 / Phase 3.5 | Q2=a→0；Q2=b→Q2.3 估值或 import 数 |
-| `data_collection` | Phase 3 | Q3 |
-| `pool_status` | Phase 3 | Q4 |
-| `hooks_installed` | Phase 3-4 | Q5 + Phase 4 测试结果 |
-| `initialized_at` | Phase 3 | now() |
+| `data_collection` | Phase 3 | Q3 → 查映射表换 enum 值 |
+| `pool_status` | Phase 3 | Q4 → 查映射表换 enum 值 |
+| `enabled_perf_adapters` | Phase 3 | Q2.1 派生（如 Q2=a 则 `[]`） |
+| `hooks_installed` | Phase 3-4 | Q5 → bool（不是字符串） |
+| `last_bump_at` / `last_published_at` / `last_published_file` / `last_retro_at` / `last_trends_run_at` | Phase 3 | 全部 `null` |
+| `last_bump_self_audited` | Phase 3 | `false` |
+| `last_trends_added_count` | Phase 3 | `0` |
+| `initialized_at` | Phase 3 | now() 本地 ISO 8601，含 `+08:00` 时区，**不要 UTC `Z`** |
