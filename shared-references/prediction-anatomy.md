@@ -236,13 +236,13 @@
 ```
 file: predictions/YYYY-MM-DD_<id>_<short>.md
 
-# 标题 — 预测日志              ← 组件 1: header（含 confidence + script_hash）
+# 标题 — 预测日志              ← 组件 1: header（含 confidence + script_hash + Prediction Basis）
 （metadata block）
 
 ## 输入快照                     ← 组件 2
 （scores + 用户改写要点 vs Claude 草稿）
 
-## 预测                         ← 组件 3 ⭐ IMMUTABLE 起点
+## 预测 v1                      ← 组件 3 ⭐ IMMUTABLE 起点（基于 pre-shoot 草稿）
 （bucket + 概率 + 中枢 + 一句话 reason）
 
 ## 推理因素                     ← 组件 4
@@ -256,9 +256,29 @@ file: predictions/YYYY-MM-DD_<id>_<short>.md
 ## 关键校准假设                 ← 组件 7
 （这次预测作为实验的明确赌注）
 
+## 预测 v2 (replaces v1)        ← (可选) 拍后改稿 ≥30% 时由 cheat-shoot 触发，append 不覆盖
+（同 7 组件结构 + 头部含 Diff vs v1 摘要）
+
 ## 复盘                         ← 仅追加，IMMUTABLE 边界
 （实绩 + top 评论 + 验证/推翻 + 新观察）
 ```
+
+### v1 / v2 段约定
+
+- **新建文件**：cheat-predict 写 `## 预测 v1`（不再裸 `## 预测`——为 v2 留 schema 一致性）
+- **legacy 兼容**：v0.1.0 时期写的 `## 预测` 文件不动；hook 与 cheat-retro 都识别
+- **v2 触发条件**：cheat-shoot 检测拍摄稿与 `scripts/<id>.md` 的 line-diff ≥ 30%（[V2_TRIGGER_THRESHOLD](../skills/cheat-shoot/SKILL.md)），调用 `/cheat-predict — mode: v2 — prediction-file: <path>`
+- **append 而非覆盖**：v2 段插在 `## 复盘` 之前。v1 段**绝不**修改（hook 物理强制）
+- **校准用谁**：cheat-retro 读最后一个 `## 预测 vN` 算偏差；v1 留作历史档案
+- **diff 学习**：v1 vs v2 的字段差异（如 ER 4→5）就是用户改稿带来的判分变化，是 rubric 升级证据
+
+### Prediction Basis 字段
+
+prediction header 必含 `Prediction Basis`：
+- `pre_shoot`（v1 默认，标准盲预测）
+- `post_shoot_pre_publish`（v2，软盲预测——拍后改稿但发布前重判）
+
+cheat-retro 用此字段在 score-curve / bump 校准时区分两条数据线，避免混样。
 
 ---
 

@@ -18,7 +18,7 @@
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "skill_version": "1.0.0",
 
   "rubric_version": "v0",
@@ -59,6 +59,13 @@
   "initialized_at": "2026-05-04T15:00:00+08:00"
 }
 ```
+
+### 关键变更（v1.2）
+
+相比 v1.1（MINOR，兼容）：
+
+- **`shoots[]` 项 schema 扩展**——新增 `scripts_path`、`script_consistency`、`script_diff_pct`、`v2_prediction_written`、`script_hash_at_shoot` 字段。语义见 cheat-shoot Phase 4。这些字段记录"拍后改稿是否触发 v2 预测重判"，cheat-retro 据此决定读 `## 预测 v1` 还是 `## 预测 v2`
+- 老 state 缺这些字段 → skills 用 `state.get(field, default)` 兜底（`script_consistency` 默认 `"consistent"`，`v2_prediction_written` 默认 `false`，`script_diff_pct` 默认 `null`）。**不强制跑 migrate**——但跑了让 state 字段对齐 schema 文档
 
 ### 关键变更（v1.1）
 

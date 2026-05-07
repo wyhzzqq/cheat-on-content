@@ -81,11 +81,19 @@ if [[ "$tool_name" == "Edit" ]]; then
     exit 0
   fi
 
-  # Find prediction section bounds. Match either '## 预测' or '## Prediction'.
-  # Pattern: line starting with '## 预测' or '## Prediction'; section ends at next '## ' or EOF.
+  # Find prediction section bounds. Match '## 预测' / '## Prediction' / '## 预测 v1'
+  # / '## 预测 v2' / etc. — all version-suffixed prediction headings count as prediction
+  # sections and are locked together.
+  #
+  # Section ends at the first NON-prediction '## ' heading (typically '## 复盘').
   prediction_section=$(awk '
-    /^## (预测|Prediction)([^a-zA-Z]|$)/ { in_pred=1; print; next }
-    /^## / && in_pred { exit }
+    /^## / {
+      if ($0 ~ /^## (预测|Prediction)([^a-zA-Z]|$)/) {
+        in_pred=1; print; next
+      } else if (in_pred) {
+        exit
+      }
+    }
     in_pred { print }
   ' "$file_path" 2>/dev/null || echo "")
 

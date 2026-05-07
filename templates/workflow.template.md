@@ -19,13 +19,16 @@ cheat-seed 写 5 个草稿到 → scripts/<日期>_<id>_<short>.md
   ↓
 /cheat-score scripts/<日期>_<id>_<short>.md → 看 rubric 评分（探索）
   ↓
-/cheat-predict scripts/<日期>_<id>_<short>.md → 写 immutable 预测到 predictions/
+/cheat-predict scripts/<日期>_<id>_<short>.md → 写 immutable 预测 v1 到 predictions/
   ↓
 拍摄完 → /cheat-shoot scripts/<日期>_<id>_<short>.md
    ├─ 建 videos/<日期>_<id>_<short>/ 目录
    ├─ 询问用户："拍时实际用的稿子和 scripts/<id>.md 一致吗？"
-   │   ├─ 一致 → cp scripts/<id>.md → videos/<id>/script.md
-   │   └─ 不一致 → 用户提供最终拍摄稿，存为 videos/<id>/script.md
+   │   ├─ 一致 → cp → videos/<id>/script.md，沿用 v1 预测
+   │   ├─ 改了 → 要最终稿 → 算 diff
+   │   │   ├─ diff ≥30% → 自动 /cheat-predict — mode: v2 → predictions/<id>.md append `## 预测 v2` 段
+   │   │   └─ diff <30% → 询问是否 v2，默认沿用 v1
+   │   └─ 大改 → 走 _redo 流程（新 scripts/<id>_redo.md + 重 cheat-predict）
    └─ buffer +1
   ↓
 发布 → /cheat-publish + URL → buffer -1
@@ -62,7 +65,9 @@ T+3 天 → /cheat-retro videos/<日期>_<id>_<short>/
 
 > **score 与 predict 的核心区别**：
 > - score 是探索，无副作用，可反复跑
-> - predict 是承诺，写完文件 `## 预测` 段被 hook 锁死
+> - predict 是承诺，写完文件 `## 预测 v1`（或 `## 预测 v2`）段被 hook 锁死
+
+> **v2 重判触发**：cheat-shoot 检测拍摄稿与原 scripts 的 line-diff ≥30% 时自动调用 cheat-predict 写 `## 预测 v2` 段（append，不覆盖 v1）。详见 [shared-references/prediction-anatomy.md](../shared-references/prediction-anatomy.md) 的 v1/v2 段约定。
 
 ### ③ 发布登记
 

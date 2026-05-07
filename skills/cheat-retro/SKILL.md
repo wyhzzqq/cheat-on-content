@@ -63,10 +63,13 @@ allowed-tools: Bash(*), Read, Edit, Write, Glob, Grep, Skill
 ### Phase 0: 校验
 
 1. 读 `<prediction-file>`，确认存在
-2. **校验 immutability**：在内存 cache 住 `## 预测` 段的内容（用于 Phase 5 后核对）
-3. 校验文件 header 有 `Published at` → 没登记的不能复盘，提示用户先 `/cheat-publish`
-4. 校验时间窗口：今天 - published_at >= RETRO_WINDOW_DAYS。不够 → 提示"还差 X 天"，询问用户是否仍坚持复盘（标 `early_retro: true`）
-5. 校验已有复盘段是否已填——已填则询问"是补充还是修正？"
+2. **识别有效预测段**：扫所有 `## 预测...` 段（可能含 `## 预测`、`## 预测 v1`、`## 预测 v2` 等）：
+   - 取**最后一个**`## 预测 vN` 作为本次校准的依据（v2 存在则用 v2；只有 v1 则用 v1；legacy 单段 `## 预测` 直接用）
+   - state.shoots 对应项的 `v2_prediction_written` 应与"是否存在 v2 段"一致——不一致则警告（state 与文件脱节）
+3. **校验 immutability**：在内存 cache 住所有 `## 预测...` 段的内容（用于 Phase 5 后核对——**全部段不可改**，不只是有效段）
+4. 校验文件 header 有 `Published at` → 没登记的不能复盘，提示用户先 `/cheat-publish`
+5. 校验时间窗口：今天 - published_at >= RETRO_WINDOW_DAYS。不够 → 提示"还差 X 天"，询问用户是否仍坚持复盘（标 `early_retro: true`）
+6. 校验已有复盘段是否已填——已填则询问"是补充还是修正？"
    - 补充 → 在已有复盘段下追加新子段，标日期
    - 修正预测段（用户错觉）→ 拒绝
 
@@ -228,7 +231,7 @@ Diff `scripts/<id>.md`（pre-shoot 草稿，可能是 cheat-seed 写或用户写
 [Phase 4 内容]
 ```
 
-**写完后再次校验**：读取保存后的文件，对比 `## 预测` 段哈希应等于 Phase 0 cache 的哈希。**不等 → 报错并回滚**。
+**写完后再次校验**：读取保存后的文件，对比**所有** `## 预测...` 段（v1 / v2 / legacy）的合并哈希应等于 Phase 0 cache 的合并哈希。**任一段被改 → 报错并回滚**。
 
 ### Phase 6: 写入 rubric_notes.md + script_patterns.md
 

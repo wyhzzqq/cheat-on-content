@@ -5,18 +5,20 @@ argument-hint: <scripts-path-or-id>
 allowed-tools: Bash(*), Read, Write, Edit, Glob
 ---
 
-# /cheat-shoot — 登记拍摄完成 + 建 video folder
+# /cheat-shoot — 登记拍摄完成 + 建 video folder + (改稿则) 触发 v2 预测
 
 把视频从"已写预测、未拍摄"状态推进到"已拍摄、未发布"状态。这一步：
 1. **建 `videos/<同 id>/`** 目录（之前没有的话）
-2. **询问用户**："实际拍摄时用的稿子和 `scripts/<id>.md` 一致吗？"——根据答案决定 `videos/<id>/script.md` 的内容
-3. 把 video folder 加进 state.shoots 队列，buffer +1
+2. **询问用户**："实际拍摄时用的稿子和 `scripts/<id>.md` 一致吗？"
+3. 算 diff——超过 V2_TRIGGER_THRESHOLD (默认 30%) → **delegate 到 `/cheat-predict — mode: v2`** 在原 prediction 文件 append `## 预测 v2` 段
+4. 把 video folder 加进 state.shoots 队列，buffer +1
 
-不写 prediction（预测早在 cheat-predict 时锁了），不发布（发布是 cheat-publish）。
+cheat-shoot 自己**不**写预测内容——所有预测落盘逻辑在 cheat-predict。cheat-shoot 只负责检测改稿 + 派发。
 
 为什么单独一个 skill：
 - buffer 警戒系统需要明确区分"拍了" vs "发了"。视频可以批量拍（一天拍 5 条），分散发（每天发 1 条）
-- "实际拍摄稿"可能与"pre-shoot 草稿"不同（用户改了 / 即兴 / 大改）——cheat-shoot 是把这个差异显式化的入口
+- "实际拍摄稿" ≠ "pre-shoot 草稿"是常态。这一步是把 diff 显式化、触发 v2 重判、采集"用户改稿 pattern"信号的入口
+- v2 预测 vs v1 预测的差异本身就是 rubric 升级证据——比如 v1 给 ER=4，v2 给 ER=5（用户改稿改高了 hook 强度），就告诉 rubric "这个用户的 ER 阈值跟我现在公式不一致"
 
 ## Overview
 
@@ -38,7 +40,9 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob
 
 ## Constants
 
-- **REQUIRE_PREDICTION = true** — 拍前必须先有 prediction 文件（否则违反盲预测——拍完才写预测会被诱导事后修改）
+- **REQUIRE_PREDICTION = true** — 拍前必须先有 v1 prediction 文件
+- **V2_TRIGGER_THRESHOLD = 0.30** — 稿子 diff 超过 30%（行级 unified diff 行数 / 原稿子行数）→ 默认建议 v2 重判；低于 30% 询问用户是否仍要 v2
+- **DIFF_METRIC = lines** — 用 `diff -u | grep '^[+-]' | wc -l` 算改动行数 / 原文件行数
 
 ## Inputs
 
@@ -76,34 +80,38 @@ allowed-tools: Bash(*), Read, Write, Edit, Glob
 ```
 拍 「<title>」 的时候，你实际用的稿子和 scripts/<id>.md 一致吗？
 
-a) 一致——直接用 scripts/<id>.md 内容存为 videos/<id>/script.md
-b) 不太一致——我改了一些
-   ↓ 接着问："你能提供拍摄时实际用的稿子吗？"
-     - 是 → 用户提供（粘贴或路径），存为 videos/<id>/script.md
-     - 否（即兴 / 没保留）→ 标 script_lost：videos/<id>/script.md 留空，
-                          只在头部加注释说明
-c) 大改了——拍出来其实是另一条
-   ↓ 提示用户：建议走 _redo 流程——
-     scripts/<id>_redo.md → 重新 cheat-predict → 再 cheat-shoot
-     原 prediction 仍保留，但和实际拍摄脱钩
+a) 一致——按草稿拍的
+b) 改了一些——你能给我看下实际拍摄稿吗？我重新打分一次（v2 预测）
+c) 大改了，基本是另一条 → 走 _redo 流程：
+   scripts/<id>_redo.md → 重新 cheat-predict → 再 cheat-shoot（原 prediction 留档脱钩）
 ```
 
-### Phase 3：写 videos/<id>/script.md
+### Phase 3：写 videos/<id>/script.md + (b 路径) 触发 v2 预测
 
-按 Phase 2 答案：
-- 答 a → cp scripts/<id>.md → videos/<id>/script.md
-- 答 b 提供新稿 → 写入用户提供的内容
-- 答 b 没保留 → 写一个占位文件：
-  ```markdown
-  # <title> — 实际拍摄稿（已遗失）
-  
-  > 用户在 cheat-shoot 时未保留实际拍摄稿（标记 script_lost）。
-  > 复盘时无法 diff `scripts/<id>.md` vs 实际拍摄版本——
-  > script_patterns 学习能力受限。
-  > 
-  > 下次建议保留拍摄草稿（哪怕只是 voice memo 转录）。
-  ```
-- 答 c → 不写 videos/<id>/script.md（走 _redo 流程后再来）
+**a 路径（一致）**：
+- `cp scripts/<id>.md → videos/<id>/script.md`
+- `script_consistency = consistent`
+- 不重判，进 Phase 4
+
+**b 路径（改了）**：
+1. 询问用户实际拍摄稿——粘贴文本 / 文件路径 / 转录文件
+2. 若用户提供 → 写入 `videos/<id>/script.md`
+3. 若用户没保留（即兴）→ 标 `script_lost`，写占位文件 + 警告"v2 重判跳过——下次建议留稿（哪怕 voice memo 转录）"，进 Phase 4
+4. 提供了的话：算 diff
+   ```bash
+   added=$(diff -u scripts/<id>.md videos/<id>/script.md | grep -c '^+')
+   removed=$(diff -u scripts/<id>.md videos/<id>/script.md | grep -c '^-')
+   total_orig=$(wc -l < scripts/<id>.md)
+   diff_pct=$(( (added + removed) * 100 / total_orig ))
+   ```
+5. **判定 v2 触发**：
+   - `diff_pct >= 30` → 默认建议 v2 重判，**主动调用** `/cheat-predict — mode: v2 — prediction-file: predictions/<id>.md` 传 `videos/<id>/script.md` 作 input。cheat-predict 走 v2 模式 append `## 预测 v2`
+   - `diff_pct < 30` → 询问用户："只改了 N% 的内容，要重判吗？默认不（v1 预测仍有效）"。用户说要 → 同上调用；用户说不 → 跳过 v2，继续 Phase 4
+6. cheat-predict 完成 v2 落盘后，控制权回到 cheat-shoot 进 Phase 4
+
+**c 路径（大改）**：
+- 不写 `videos/<id>/script.md`，提示走 `_redo` 流程
+- 退出 cheat-shoot（不进 Phase 4）
 
 ### Phase 4：state 更新
 
@@ -117,13 +125,15 @@ c) 大改了——拍出来其实是另一条
       "scripts_path": "scripts/2026-05-04_abc123_停止期待.md",
       "shot_at": "<ISO timestamp>",
       "script_consistency": "consistent" | "modified" | "lost",
+      "script_diff_pct": <0-100 int 或 null>,
+      "v2_prediction_written": <true/false>,
       "script_hash_at_shoot": "<sha256:12 of videos/<id>/script.md>"
     }
   ]
 }
 ```
 
-如 `script_consistency = modified` → diff `scripts/<id>.md` 和 `videos/<id>/script.md` 的 hash → 若不同，将 diff 信息标到 prediction 文件**复盘段**（不是预测段）作为日后 retro 的种子。
+`v2_prediction_written: true` 表示 prediction 文件里现在有 `## 预测 v2` 段，cheat-retro 应读 v2 算偏差；`false` 表示沿用 v1。
 
 ### Phase 5：输出 buffer 状态
 
@@ -156,9 +166,9 @@ c) 大改了——拍出来其实是另一条
 
 ## Refusals
 
-- 「拍了 X，顺便给我写个预测」 → 拒绝。预测必须**拍前**写（盲预测）。请先 /cheat-predict 再来 /cheat-shoot
-- 「我没有 video folder，我直接拍的」 → 询问用户 → 帮他建一个 video folder + 提示下次走完整流程；登记时标 `ad_hoc: true` 提醒下次走标准流程
-- 「拍了 X 但还没改完 script」 → 拒绝。如果 script 还在改，预测段已经过期——请改完后重新跑 /cheat-predict 再 /cheat-shoot
+- 「拍了 X，但我从来没跑过 cheat-predict」 → 拒绝。v1 预测**必须拍前写**——拍完才写预测会被画面诱导事后修改。请先 /cheat-predict 写 v1 再来 /cheat-shoot。（v2 重判是另一回事——v1 已存在 + 拍后改稿才允许）
+- 「我没有 video folder，我直接拍的」 → 询问用户 → 帮他建 video folder + 提示下次走完整流程；登记时标 `ad_hoc: true`
+- 「我改稿了但你直接覆盖 v1 吧，别留 v2 段」 → 拒绝。v1 是档案，v2 才是当前判断——append 不覆盖。两段一起留是 rubric 学习的关键证据
 
 ## Integration
 

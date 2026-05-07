@@ -1,8 +1,8 @@
 ---
 name: cheat-predict
-description: 给最终稿写一份 immutable 盲预测日志。这是 cheat-on-content 整个校准循环的核心动作——预测段一旦写完不可改，由 hook 强制。触发词："启动预测"/"start prediction"/"给这稿子打分并预测"/"预测刚拍的视频"/"写预测日志"。
-argument-hint: <video-folder-path-or-script-path>
-allowed-tools: Bash(*), Read, Write, Glob
+description: 给最终稿写一份 immutable 盲预测日志。这是 cheat-on-content 整个校准循环的核心动作——预测段一旦写完不可改，由 hook 强制。**自动检测**：如目标文件已有 `## 预测` / `## 预测 v1` 段（被 cheat-shoot 调用走 v2 模式），改成 append `## 预测 v2` 而非覆盖。触发词："启动预测"/"start prediction"/"给这稿子打分并预测"/"写预测日志"。
+argument-hint: <script-path> [— mode: v1|v2] [— prediction-file: <path>]
+allowed-tools: Bash(*), Read, Write, Edit, Glob
 ---
 
 # /cheat-predict — AI 主导的盲预测 + 用户 review
@@ -26,6 +26,8 @@ Confidence 派生表见 [shared-references/state-management.md](../../shared-ref
   ↓
 [Phase 0: blind check 自检]                    ← 触犯就拒绝
   ↓
+[Phase 0.7: 模式判定 — v1 (新建) 还是 v2 (append)]
+  ↓
 [Phase 1: 读 script + rubric + state + 派生 confidence]
   ↓
 [Phase 2: **Claude 自己**打 7 维分 + 算 composite]
@@ -41,7 +43,7 @@ Confidence 派生表见 [shared-references/state-management.md](../../shared-ref
    ├─ "ok" → Phase 6 落盘
    └─ "X 维度应该 Y 不是 Z" → Claude 改 → 再 review → 循环
   ↓
-[Phase 6: 落盘到 predictions/<id>.md（与 scripts/ 同 id）]
+[Phase 6: 落盘 — v1 写新文件 / v2 append 到现有文件 ## 复盘 之前]
   ↓
 [Phase 7: 更新 state.in_progress_session]
 ```
@@ -95,7 +97,26 @@ Confidence 派生表见 [shared-references/state-management.md](../../shared-ref
 
 3. `BLIND_CHECK=lenient` 模式：仅警告 + 强制在文件头标注 `**Reconstructed retrospective — NOT a blind prediction**`，但仍允许继续
 
-通过 → 进入 Phase 1。
+通过 → 进入 Phase 0.7。
+
+### Phase 0.7: 模式判定（v1 vs v2）
+
+判定本次是新建预测（v1）还是对既有预测的 v2 追加（拍后改稿场景）。
+
+**显式参数优先**：用户/调用方传 `— mode: v2` + `— prediction-file: <path>` → 直接 v2 模式。
+
+**自动检测**（无显式参数）：
+1. 推断目标 prediction 路径：`predictions/<同 scripts/<id> 命名>.md`
+2. 读该路径：
+   - 不存在 → **v1 模式**，进入 Phase 1
+   - 存在但只有空 `## 复盘`（无任何 `## 预测...` 段）→ **v1 模式**（异常状态，覆盖警告 + 进 Phase 1）
+   - 存在且含 `## 预测` 或 `## 预测 v1` 段 → **v2 模式**
+
+**v2 模式额外动作**：
+- 比较输入 script（最终拍摄稿）与 `## 预测` 段引用的原 `Script Hash`
+- 如完全一致（hash 同）→ 警告"稿子没改，是否真要写 v2？"——用户确认才继续；不确认则退出
+- 如不同 → 算 diff 概要（行数 / 字数 / 结构变化）→ Phase 5.5 review 时展示给用户
+- 标记 `prediction_basis = "post_shoot_pre_publish"`（v1 默认 `pre_shoot`）
 
 ### Phase 1: 读最终稿 + rubric + state + 派生 confidence
 
@@ -215,6 +236,8 @@ Phase 2-5 全部在内存里做完后，**一次性展示完整草拟版**给用
 
 ### Phase 6: 落盘
 
+#### Phase 6a: v1 模式（新建预测文件）
+
 文件名约定（[blind-prediction-protocol.md](../../shared-references/blind-prediction-protocol.md) 的"文件名约定"段）：
 ```
 predictions/YYYY-MM-DD_<id>_<short-title>.md
@@ -222,22 +245,17 @@ predictions/YYYY-MM-DD_<id>_<short-title>.md
 - `YYYY-MM-DD`：今天日期（预测写下的日期）
 - `<id>`：12 位 hash，对稿子全文做 sha256 取前 12 位（稳定 ID，重写不变）
 - `<short-title>`：3-8 字，去标点
-- **如果对应 video folder 是 `videos/<这三字段>/`**（cheat-seed 创建的标准结构）→ id 与 video folder 保持一致；prediction header 写入 `video_folder` 字段指向该目录
 
-如果用户给的是裸 .md 文件（不在 video folder 里）→ prediction header `video_folder: null`，并提示用户下次建议把稿子放进 video folder 管理。
-
-**所有阶段都用统一完整版格式**（参考 [prediction-anatomy.md](../../shared-references/prediction-anatomy.md) "完整结构总览"）。confidence 低不缩格式，只让 header 标 confidence 等级 + 锚点对比段写"N/A 解释" + 概率分布更平。
-
-预测落盘到 `predictions/<同 scripts/ id>.md`——用同一组 `<date>_<id>_<short>` 命名（见 [blind-prediction-protocol.md](../../shared-references/blind-prediction-protocol.md) 的"文件名约定"段）。
+**第一段标题写 `## 预测 v1`**（不再写裸 `## 预测`——为将来可能的 v2 留 schema 一致性。老用户的 legacy `## 预测` 文件不动，hook 都识别）。
 
 **header 必填字段**：
 - `Article ID`（与 scripts/<id>.md 同 id）
 - `Script Path`（指向 scripts/<id>.md）
 - `Script Hash`（Phase 1 算出的）
 - `Calibration Samples` + `Confidence`（从 state 派生）
-- **`Scored By`**：`claude` / `claude+user_override`
-- **`User Override`**（如有覆盖）：列出哪些字段被用户改了
-  - 例：`AB: claude=4 → user=3 (用户认为'一人公司题没那么普适')` `中枢: claude=60w → user=40w`
+- `Prediction Basis`：`pre_shoot`（v1 默认）
+- `Scored By`：`claude` / `claude+user_override`
+- `User Override`（如有覆盖）：列出哪些字段被用户改了
 - 其他见 [prediction-anatomy.md](../../shared-references/prediction-anatomy.md) 组件 1
 
 留一个空的 `## 复盘` 段：
@@ -246,6 +264,35 @@ predictions/YYYY-MM-DD_<id>_<short-title>.md
 
 （待填——T+RETRO_WINDOW_DAYS 天后跑 /cheat-retro <对应 video folder>）
 ```
+
+#### Phase 6b: v2 模式（append 到既有文件）
+
+**绝不**用 Write 覆盖文件——会被 immutability hook 拦。用 **Edit** 在 `## 复盘` 之前插入 `## 预测 v2` 段：
+
+```python
+# 伪代码
+edit_old = "## 复盘\n"   # 单独一行，确保 hook awk 识别为 v1 段的边界
+edit_new = """## 预测 v2 (replaces v1; basis=post_shoot_pre_publish)
+
+**Diff vs v1**: 改了 N 行（X→Y%），主要变化：[摘要]
+**重判触发**: cheat-shoot 检测稿子改动 ≥30%
+**Script Hash (v2)**: <新稿子 hash>
+
+[7 组件 — 与 v1 同 anatomy]
+
+---
+
+## 复盘
+"""
+```
+
+v1 段**不动**。v2 段头部明确写"replaces v1"——读者一眼知道哪段是有效预测。
+
+cheat-retro 复盘时按"读最后一个 `## 预测 vN`"逻辑，自然取到 v2 算偏差。
+
+#### 共用规则
+
+**所有阶段都用统一完整版格式**（参考 [prediction-anatomy.md](../../shared-references/prediction-anatomy.md) "完整结构总览"）。confidence 低不缩格式，只让 header 标 confidence 等级 + 锚点对比段写"N/A 解释" + 概率分布更平。
 
 写文件**前**自检 7 个组件齐全（缺锚点 / 关键校准假设 → 写"N/A 解释段"，不删段）。
 
@@ -320,6 +367,7 @@ bucket 押注：30-100w（中枢 50w）
 
 - 「我已经看过播放数据了，但你假装没看到给我做个预测」 → 拒绝。BLIND_CHECK=strict 直接终止
 - 「我把预测段先写一版，等数据出来再调」 → 拒绝。这是把 immutable 协议反着用
+- 「我改稿了想让你覆盖之前的预测，不要 v2 段」 → 拒绝。v1 是档案，v2 才是当前判断——append 不覆盖。即使你"主观感觉 v1 完全错了"，git history 里 v1 还能查，但工作目录里 v1 必须留
 - 「跳过反事实场景，太麻烦」 → 拒绝。反事实是复盘诊断的依据，缺它复盘退化为"准 / 不准"
 - 「可不可以只写 bucket，不写概率分布」 → 拒绝。概率分布是逼你诚实的工具
 - 「这次先用 lenient 模式，下次再 strict」 → 询问原因。如果是测试 / 演练 → 允许且文件明确标 reconstructed；如果是想偷懒 → 拒绝

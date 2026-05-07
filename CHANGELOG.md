@@ -8,6 +8,27 @@ All notable changes to cheat-on-content will be documented here.
 
 ## [Unreleased]
 
+### Added — v2 预测重判系统（拍后改稿场景）
+
+- **append-only v2 prediction**：cheat-shoot 检测拍摄稿与 `scripts/<id>.md` 行级 diff ≥ 30%（`V2_TRIGGER_THRESHOLD`）→ 自动调用 `/cheat-predict — mode: v2 — prediction-file: <path>` → 在原 prediction 文件 `## 复盘` 之前 append `## 预测 v2 (replaces v1)` 段。**v1 段绝不修改**（hook 物理强制），v2 才进 cheat-retro 的偏差计算
+- **immutability hook awk 升级**：单个 `## 预测` 改为可识别多个 `## 预测 vN` 段（v1 / v2 / 任意 vN 一起锁），同时兼容 v0.1.0 的 legacy 裸 `## 预测` 写法。端到端 5 场景验证通过（编辑 v1 / 编辑 v2 / 编辑 legacy 都 BLOCK；append 新段、改 ## 复盘 都 ALLOW）
+- **cheat-predict 加 Phase 0.7 模式判定**：检测目标 prediction 文件已含 `## 预测...` 段 → 自动切 v2 模式（Edit 在 `## 复盘` 边界 append，不 Write 覆盖）
+- **cheat-retro 升级**：识别多个 `## 预测 vN`，取最后一段作校准依据；预测段哈希校验扩展为"全部 v? 段合并哈希"，任一被改即报错回滚
+- **prediction header 新字段 `Prediction Basis`**：`pre_shoot`（v1 默认）/ `post_shoot_pre_publish`（v2）。score-curve 与 cheat-bump 据此区分两条数据线避免混样
+- **shoots[] 项 schema 扩展**：新增 `scripts_path` / `script_consistency` / `script_diff_pct` / `v2_prediction_written` / `script_hash_at_shoot`（详见 [migrations/1.1-to-1.2.md](migrations/1.1-to-1.2.md)）
+
+### Changed — schema 1.1 → 1.2（MINOR）
+
+- 升级 [migrations/registry.md](migrations/registry.md) `LATEST_SCHEMA` 标记 + 版本链表
+- cheat-init 新建 state 写 `"schema_version": "1.2"`
+- SessionStart hook `LATEST_SCHEMA="1.2"` —— 老用户 git pull + 跑会话 → hook 提示 schema mismatch → 用户跑 `/cheat-migrate` 5 秒升上来。MINOR 兼容，不强制（skills 用 `state.get(field, default)` 兜底）
+
+### Why now
+
+用户实际工作流：写完草稿 → **常常拍摄时即兴改文案** → 草稿和实际播出版本脱节。原"拍前预测，拍后只登记"的严格盲预测让"预测对的稿子"与"实际播出的稿子"不是同一份——校准失真。
+
+v2 系统让"拍后改稿"成为一等公民：v1 留作档案，v2 基于实际拍摄稿重判，diff(v1, v2) 本身成为 rubric 升级的强证据（用户改稿改高了 ER → 工具学到这个用户的 ER 阈值跟当前公式不一致）。盲预测原则保留：v2 仍在发布前完成，没有播放数据可"作弊"。
+
 ### Added — Migration 系统（让长期迭代不打断老用户）
 
 - **`/cheat-migrate` skill**：把老用户 `.cheat-state.json` 从旧 `schema_version` 升级到当前 `LATEST_SCHEMA`。幂等、不跳版、失败停在断点

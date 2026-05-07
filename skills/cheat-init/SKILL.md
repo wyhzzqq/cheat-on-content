@@ -269,7 +269,7 @@ c) 不找 → state 标 `benchmark_status: none`，用通用 v0 起步
    写入（**所有 `<...>` 占位必须查上面 Q 的映射表换成具体 enum 值，绝不直接存字母**）：
    ```json
    {
-     "schema_version": "1.1",
+     "schema_version": "1.2",
      "skill_version": "1.0.0",
      "rubric_version": "v0",
      "content_form": "<查 Q1 映射表，写 enum 字符串如 \"opinion-video\">",
