@@ -53,8 +53,10 @@ Batch Mode — 用户显式要批量（`/cheat-seed --batch 5`）：
 
 ## Constants
 
-- **DEFAULT_TREND_SOURCES = ["manual-paste"]** — 仅 Mode C / Batch 用到
-- **MAX_DEEP_DIVE_TURNS = 4** — Mode A/B 收敛阶段最多 4 轮反问，避免 AI 过度盘问
+- **DEFAULT_TREND_SOURCES = ["manual-paste"]** — 仅 Mode C / Mode A 灰色场景 / Batch 用到。用户可在 state 里加 aihot / trendradar-mcp
+- **TREND_TOOL_ROUTING** — 按 `content_form` 路由数据源，详见 [shared-references/data-source-routing.md](../../shared-references/data-source-routing.md)
+- **MODE_B_MAX_REPROBE_TURNS = 2** — Mode B "为什么" 反问最多 2 轮；超过则转 Mode C
+- **MAX_DEEP_DIVE_TURNS = 4** — Mode A 收敛阶段最多 4 轮反问，避免 AI 过度盘问
 - **WITH_DRAFT = yes** — 默认确认角度后立刻写 draft；用户可说 "等下，我自己写" 跳过
 - **DRAFT_LENGTH** — 派生自 `state.typical_duration_seconds`：30s→100-200字 / 90s→250-500字 / 240s→600-1000字 / 450s→1100-2000字 / 900s→2200+字
 
@@ -96,11 +98,11 @@ Batch Mode — 用户显式要批量（`/cheat-seed --batch 5`）：
 
 读用户输入，识别：
 
-**含具体名词 + 情绪 / 经历词**（"我昨天开会..." / "我看到 X 让我..." / "我对 Y 觉得..."）→ **Mode A**
+**含具体名词 + 情绪 / 经历词**（"我昨天开会..." / "我看到 X 让我..." / "我对 Y 觉得..."）→ **Mode A**（深挖；如话题是时事，Phase 2A.5 询问要不要拉外部数据）
 
-**含方向词但无具体内容**（"想做职场" / "AI 方向" / "婚恋"）→ **Mode B**
+**含方向词但无具体内容**（"想做职场" / "AI 方向" / "婚恋"）→ **Mode B**（单问"为什么想做这个"——用户内省窗口，**不调任何热点工具**）
 
-**显式说没想法**（"不知道做什么" / "帮我想" / "随便给个"）→ **Mode C**
+**显式说没想法**（"不知道做什么" / "帮我想" / "随便给个"）→ **Mode C**（按 [data-source-routing.md](../../shared-references/data-source-routing.md) 调热点工具 + 用户挑 + 回到内省；都不行则走"聊经历"三选项兜底）
 
 **显式 `--batch N`**（用户主动批量）→ **Batch Mode**
 
@@ -110,11 +112,11 @@ Batch Mode — 用户显式要批量（`/cheat-seed --batch 5`）：
 你今天想干嘛？
 
 - 有想做的主题 / 经历 → 直接告诉我（"我想做一条 X" / "我最近 X..."）
-- 想要的方向但不具体 → 告诉我大致方向
-- 完全没想法，想我帮你 brainstorm → 说"帮我想"
-- 想批量搞定未来 N 个选题 → 说 "batch <N>"
+- 知道大致方向 → 告诉我（"想做职场" / "AI 方向"）→ 我会单问你为啥想做
+- 完全没想法 → 说"帮我想"→ 我用 [aihot / trendradar] 拉今天的热点给你看
+- 批量搞定 → 说 "batch <N>"
 
-(我不会拿 3 个开放问题追你——你给一句话我就开始)
+(我不会拿一堆开放问题追你——你给一句话我就开始)
 ```
 
 注意这是**唯一的开放式问题**——只在用户**纯触发** `/cheat-seed` 时问。如果用户已经在触发词里给了内容（"/cheat-seed 我想做..." 或 "找选题 我最近开会..."），直接进 Mode A/B/C 不再问这一句。
@@ -159,45 +161,92 @@ Confidence: 🔴 极低 (你才校准 0/N 篇)
 用户说"换角度" → 回 Phase 2A 深挖更多。
 用户说"我自己写" → 把 candidate 加进 candidates.md 标 tier1，结束。
 
-### Phase 2B: Mode B 收敛到具体经历
+### Phase 2B: Mode B — 单问"为什么"，触发用户内省
 
-用户给了方向但不具体（"想做职场"）：
+用户给了方向但不具体（"想做职场" / "AI 方向" / "婚恋"）。**这阶段不调任何热点工具**——是用户内省的窗口，外部信息会污染。
 
-```
-[方向] 太广。三种收敛方式，挑一个：
-
-a) 你最近真实接触到的某件具体事？（"上周我看到我同事 X..."）
-b) 你最近读到 / 看到的某条让你想吐槽的内容？（"知乎上有个回答..."）
-c) 你长期琢磨的某个 unsolved 困惑？（"我一直没想明白为啥 X..."）
-
-随便挑一个开始讲。
-```
-
-用户给具体内容 → 收敛到 Mode A 深挖。
-用户继续抽象 → "OK 那走 brainstorm 模式（Mode C）"。
-
-### Phase 2C: Mode C — 抓热点 + 提议 1 个
-
-用户完全没想法，进 brainstorm 模式：
-
-1. 抓热点（按 `enabled_trend_sources`，默认 weibo-hot + zhihu-hot；缺则纯 Claude brainstorm）
-2. 读用户历史（`predictions/*.md` 的 title 集 + 高表现样本）
-3. **不一次给 5 个候选**——给 1 个：
+只问一个问题，**单刀直入**：
 
 ```
-看你历史 [做了 X / Y 类内容] + 今天的热点 [X1 / X2]，
-我建议这个角度：
-
-[一句话立意]
-
-[走法 + 粗打分 + confidence，同 Mode A 收敛输出]
-
-要这个吗？(yes / 换一个 / 我想批量看 5 个 → 进 batch 模式)
+为什么想做这个主题？
 ```
 
-用户说"换一个" → 提议另一个（再 1 个，不是 5 个）。
-用户说"批量" → 切 Batch Mode。
-用户 yes → Phase 4 写 draft。
+不要问"a/b/c 三种例子"——那是 dump 选项让用户挑，破坏内省。让用户自己组织语言。
+
+**根据用户回答分流**：
+
+| 用户答 | 分类 | 行为 |
+|---|---|---|
+| 含具体经历 / 个人卡点（"我自己经常加班" / "我看到 X 让我..."） | **真动机** | 转 Mode A 深挖（Phase 2A） |
+| 抽象热度归因（"这话题最近热" / "别人都在做" / "听说能涨粉"） | **空动机** | 反问"那你自己对这个话题最有感觉的角度是啥？"——逼出个人 stake；继续空 → 转 Mode C |
+| "我也不知道" / "朋友说赚钱" / 模糊推搡 | **真没想法** | 直接转 Mode C |
+
+**反问纪律**：最多 2 轮。第 2 轮还问不出真动机 → 直接转 Mode C，**不要无限挖**。
+
+> 设计意图：Mode B 是"过滤器"，不是"工厂"。用户来这里要么暴露真实动机（→ 进 Mode A）要么暴露自己其实没想法（→ 进 Mode C）。两条都比硬要在 Mode B 里产出选题更好。
+
+### Phase 2C: Mode C — 外部素材 + 用户挑 + 回到内省
+
+用户完全没想法（直接显式说 / 从 Mode B 转过来）。**这是唯一默认调热点工具的入口**。
+
+按 [shared-references/data-source-routing.md](../../shared-references/data-source-routing.md) 的路由规则：
+
+1. **拉外部素材**（按 `content_form` 选 trend source）：
+   - `tutorial-builder` / AI 类 → 调 aihot skill
+   - `opinion-video` / `long-essay` / `podcast` / `other` → 调 trendradar-mcp（如启用）
+   - `mixed` → 两个都调
+   - 都不可用 → 走 manual-paste（询问用户："今天看到啥可以拍的？粘几条 URL/标题"）
+
+2. **聊经历兜底**（用户拒绝看外部素材 / 外部素材都不感兴趣）：
+
+   ```
+   外部素材你都没感觉，那回到你自己。三个开口，挑一个开始讲：
+
+   a) 你最近真实接触到的某件具体事？（"上周我看到我同事 X..."）
+   b) 你最近读到 / 看到的某条让你想吐槽的内容？（"知乎上有个回答..."）
+   c) 你长期琢磨的某个 unsolved 困惑？（"我一直没想明白为啥 X..."）
+
+   随便挑一个开始讲。
+   ```
+
+3. **拉到外部素材后**，用 rubric 粗筛 + 按 content_form 过滤，留 5 条最契合的：
+
+   ```
+   今天这 5 个跟你形态契合：
+   1. [标题 A]（来源: trendradar / 微博热搜 / hot_score: 8.5）
+   2. [标题 B]（来源: aihot / 模型类 / 精选）
+   3. ...
+
+   你哪个最有感觉？没感觉就回 '都没'，我换方向问。
+   ```
+
+4. **用户挑了一条 → 回到内省**：
+
+   ```
+   OK [标题 X]。你为啥对这条最有感觉？
+   是 [angle1] 还是 [angle2] 还是别的？
+   ```
+
+   → 用户答 → 转 Mode A 深挖。
+
+5. **用户回 "都没"** → 转回 Mode C 第 2 步的"聊经历兜底"。
+
+**关键**：热点不是"塞 5 候选让用户挑"，是"给材料 + 强制问用户的个人 stake"——AI 不替用户决定哪条最值得做。
+
+### Phase 2A.5: Mode A 灰色场景 — 用户讲了时事话题
+
+Mode A 默认深挖用户经历。但如果**用户讲的本身是时事话题**（产品名 + 时间词 / 人名 + 事件词），按 [data-source-routing.md](../../shared-references/data-source-routing.md) 的"时事判定"规则，**询问**用户要不要拉外部数据作参考：
+
+```
+💡 [话题] 是时事——我可以拉一下今天的舆论风向（各平台情绪 + 主要 angles）作参考。
+
+要看吗？回 '看' 我调；回 '不用' 我直接跟你深挖你的角度。
+```
+
+用户回 "看" → 调对应 trend source → 把数据 inline 到深挖 context；
+用户回 "不用" → 标准 Mode A 深挖，不动外部数据。
+
+**永远不主动调**——用户的 angle 优先于外部数据，避免外部信息**带偏**用户视角。
 
 ### Phase 2D: Batch Mode（用户显式 `--batch N`）
 
@@ -287,7 +336,9 @@ c) 你长期琢磨的某个 unsolved 困惑？（"我一直没想明白为啥 X.
 ## Refusals
 
 - 「跳过深挖，直接写 draft」 → 询问"你想直接给主题让我写吗？OK 但 draft 质量可能差——我不知道你的角度。给我一句话立意我就写"
-- 「AI 替我决定 topic」 → 拒绝走 Mode A/B 路径。如真的没想法 → Mode C，但仍**给 1 个**让用户判断
+- 「AI 替我决定 topic」 → 拒绝。Mode A/B/C 路径里 AI 永远只**呈现外部素材** + **问用户角度**，不替用户拍板"做哪条"
+- 「Mode B 我懒得回答为什么，直接给我 5 个候选吧」 → 拒绝。Mode B 的"为什么"是过滤器——你答不出来就不该用 Mode B 的方向。要么进 Mode A 给具体经历，要么进 Mode C 我帮你找素材
+- 「Mode A 时直接帮我拉热点，不问我同意」 → 拒绝。Mode A 用户已经有 angle，未经允许拉外部数据会污染他的视角。详见 [data-source-routing.md](../../shared-references/data-source-routing.md)
 - 「一次写 5 个 draft」 → 不在默认流程。用户必须显式 `--batch 5`
 - 「我懒得改写，直接拍 AI draft」 → 警告"AI 直接生成的稿子拍出来 ER 偏低，会污染你的校准数据"，但用户坚持也允许（标 `unmodified_ai_draft: true`）
 

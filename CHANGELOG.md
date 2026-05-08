@@ -8,6 +8,32 @@ All notable changes to cheat-on-content will be documented here.
 
 ## [Unreleased]
 
+### Added — cheat-seed Mode 重构 + 双热点工具集成
+
+**问题**：原 Mode B 给"a/b/c 三种例子"让用户讲经历——但同样的话术对**有方向但抽象的用户**（"想做职场"）和**完全没想法的用户**（"帮我想"）一视同仁，前者其实有真动机不需要 AI 列举，后者需要的是外部素材而不是 prompt。
+
+**改动**：
+
+- **Mode B 改成单问"为什么想做这个主题？"** —— 用户内省窗口，**不调任何热点工具**。3 类回答：含具体经历→转 Mode A；空动机→反问最多 2 轮；真没想法→转 Mode C
+- **Mode C 整合外部素材**：按 `content_form` 路由热点工具——AI 类形态调 [aihot](adapters/trend-sources/aihot.md)，文化/社会形态调 [trendradar-mcp](adapters/trend-sources/trendradar-mcp.md)，混合两个都调；用户挑一条后**回到内省**问"你为啥对这条最有感觉"，再转 Mode A 深挖
+- **Mode A 灰色场景**（用户给了时事话题）：Phase 2A.5 询问"要不要拉外部数据作参考"——**不主动调**，避免外部信息带偏用户视角
+- **聊经历三选项移到 Mode C 兜底**：仅当用户拒绝外部素材或外部都不感兴趣时呈现
+
+### Added — 两个一等公民 trend source
+
+- **[aihot](adapters/trend-sources/aihot.md)**（Claude skill）：[aihot.virxact.com](https://aihot.virxact.com) 的中文 AI 行业每日精选，5 类（模型/产品/行业/论文/技巧）。无 auth，curl 公开 API，rate limit 600/min
+- **[trendradar-mcp](adapters/trend-sources/trendradar-mcp.md)**（MCP server）：[TrendRadar](https://github.com/sansan0/TrendRadar)（57k stars，GPL-3.0 通过 MCP 调用不构成 linking）。25+ MCP 工具——除 `get_latest_news` 外还有 `analyze_topic_trend`（爆火/衰退判定）、`compare_periods`（周环比）、`analyze_sentiment`
+
+### Added — `shared-references/data-source-routing.md`
+
+热点工具的触发与路由协议——单一来源记录："何时调"（5 个入口的触发矩阵）+ "调哪个"（content_form → adapter 路由表）+ "不调时怎么办"（失败降级链）+ Token 成本意识。
+
+### 哲学保持不变
+
+> 热点工具是"前置素材库"，不是"主菜单"——AI 给材料，用户决定 angle。
+
+cheat-seed 的核心论点"好内容来自用户的真实经历，AI 不凭空 brainstorm"完全保留。新设计只是让"完全没想法"这条 cold-cold-start 路径不再死锁。
+
 ### Added — v2 预测重判系统（拍后改稿场景）
 
 - **append-only v2 prediction**：cheat-shoot 检测拍摄稿与 `scripts/<id>.md` 行级 diff ≥ 30%（`V2_TRIGGER_THRESHOLD`）→ 自动调用 `/cheat-predict — mode: v2 — prediction-file: <path>` → 在原 prediction 文件 `## 复盘` 之前 append `## 预测 v2 (replaces v1)` 段。**v1 段绝不修改**（hook 物理强制），v2 才进 cheat-retro 的偏差计算
