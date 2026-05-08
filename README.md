@@ -3,9 +3,16 @@
 </h1>
 
 <p align="center">
-做内容本质上就是作弊——谁先看穿规律，谁就拿走流量。<br>
-凭感觉发是<b>猜</b>，这套让你<b>算</b>。也叫<b>网红外挂</b>。<br>
-我用它一个月涨粉 100w —— 不是灵感，是系统。
+  <strong>English</strong>
+  &nbsp;·&nbsp;
+  <a href="docs/README_CN.md"><strong>简体中文</strong></a>
+</p>
+
+<p align="center">
+You're reading this. The skill predicted it.<br>
+It turns every "I feel this will go viral" into a calibrated experiment.<br>
+I used it to gain 1M followers in a month. It said I'd write this. I did.<br>
+You're now stopping to question whether this is real — that's predicted too.
 </p>
 
 <p align="center">
@@ -16,65 +23,82 @@
 
 ---
 
-## 🎬 它真正在干什么
+## 🎬 What it actually does
 
-90% 的创作者都活在同一个循环里：
+Most creators live in the same gambling loop:
 
-> 凭感觉发 → 数据出来发现拉了 → 不知道为什么拉 → 下一条还是凭感觉
+> Publish → Numbers come in → Learn nothing → Roll the dice again
 
-爆了不知道为啥爆，扑了学不到东西。一年发 200 条，水平和第一天一样——只是更累。
+A creator who's shipped 200 pieces is barely 10% sharper than someone who's shipped 1 — because they never **kept books** after each round.
 
-**网红外挂**把每一篇都强行变成一次校准实验：
+**Cheat on Content** makes every judgment get logged, retrospected, absorbed into the next:
 
-📊 打分 → 🎯 盲预测 → 🚀 发布 → 📈 T+3 天复盘 → 🧬 进化你的评分公式
+📊 Score → 🎯 Blind-predict → 🚀 Publish → 📈 T+3d retro → 🧬 Evolve your rubric
 
-跑一个月 = 你有了一份**只属于你的爆款公式**。
-跑三个月 = 你比刚开始的自己强 10 倍。
+This isn't motivation. It's **compounding** — every piece you don't retro is silently eroding your ability to see yourself.
+
+One month in = you have a hit-formula that's **only yours**.
+Three months in = you're 10× sharper than your first-day self.
 
 ---
 
-## ⚖️ 它和别的"创作工具"哪里不一样
+## 🌀 Origin
 
-| 别人 | 这个 |
+> I never believed in fate. Until this skill made me film a video — and predicted exactly how much traffic that video would pull.
+>
+> I tried to break it. I told my audience. I hoped collective observation would collapse the wave function and shift the trajectory.
+>
+> The data was accurate.
+>
+> I didn't escape fate. I just moved from first-order to second-order.
+>
+> If even my awakening — even my audience's observation — was already in its prediction, then right now, reading this:
+> are you here out of curiosity, or just completing the algorithm's final placement?
+>
+> — *the creator*
+
+---
+
+## ⚖️ How it differs from other "creator tools"
+
+| Others | This |
 |---|---|
-| 给你"灵感" | 让你**自己的灵感被量化** |
-| AI 帮你写 | AI 帮你**判**——稿子还是你的 |
-| 一发发 10 个版本 A/B 测 | 一发就**赌**——把判断写下来，数据出来对账 |
-| 静态数据看板 | **会进化的评分公式**——你三个月后的 rubric 已经不是初始版 |
+| Give you "inspiration" | Make **your own intuition** measurable |
+| AI writes for you | AI **judges** for you — the script stays yours |
+| Ship 10 versions, A/B test | Ship one — **bet** in writing, settle the books with data |
+| Static dashboard | An **evolving rubric** — your formula 3 months from now isn't the starting one |
 
-一句话：别的工具帮你"产出更多"，这个工具帮你"判得更准"。
-
----
-
-## 🤔 那 ChatGPT / 豆包 / DeepSeek 不是也能干这个？
-
-那是**通用助手**——对所有人说同样的话。你问"我这条会爆吗"，它的答案是从全网平均经验拟合出来的，跟你的账号没关系。明天再问一遍，答案还是上次那个——**它不记得你，更不会因为你而变**。
-
-这套是**你自己的运营专家**，只服务你这一个账号：
-
-- 评分公式从**你的**历史数据反推，不是通用训练分布
-- 每发一条它就更新一次对你账号的理解——三个月后判断准度比刚开始强 10 倍（**自动进化**）
-- 它知道你的对标账号、你的发布 cadence、你最近三次为什么扑——这些 ChatGPT 第一句话就忘了
-
-通用 LLM 帮所有人；这套帮你**这个**账号。
+In a sentence: other tools help you "ship more." This helps you "judge sharper."
 
 ---
 
-## 🛡️ 它怎么让循环真的能进化
+## 🤔 Can't I just use ChatGPT / DeepSeek / Doubao?
 
-📝 **每条都留底**：发布前打分、写预测，全程存档。三天后回来对账——你哪里准、哪里偏，**一目了然**，不再是模糊的"感觉这次没发好"。
+Those are **general assistants** — they tell everyone the same thing. You ask "will this go viral?" and the answer is fitted to global average opinion, not your channel. Ask again tomorrow — same answer. **It doesn't remember you. It doesn't change because of you.**
 
-🔁 **越用越准**：连续三次同方向偏差，工具自动催你升级评分公式。**你不主动它也催**。
+This is **your own ops expert** — serving only your one channel:
 
-🛡️ **升级有刹车**：换公式必须用新公式重判所有历史样本，能比旧公式更准才放行；还要跨模型独立审一次——**防你自己骗自己**。
+- The scoring formula is reverse-engineered from **your** history, not the global training distribution
+- Every piece you ship updates its understanding — by month three, judgment accuracy is 10× sharper than day one (**auto-evolving**)
+- It knows your benchmark account, your cadence, the last three reasons you flopped — things ChatGPT forgets after the first reply
 
-🪒 **rubric 是工作台不是博物馆**：被推翻的观察删，被吸收的也删。永远只放当下最有用的。
+General LLMs help everyone. This helps **your** account.
 
 ---
 
-## 📦 安装
+## 🛡️ Why the loop actually evolves
 
-### Claude Code
+📝 **Every piece is logged**: Score and prediction get written before publish, archived end-to-end. Three days later you settle accounts — you see exactly where you were sharp, where you were off. No more vague "I feel this one didn't land."
+
+🔁 **It gets sharper**: Three same-direction misses in a row, the tool actively prompts you to upgrade your scoring formula. **You don't have to remember — it remembers for you.**
+
+🛡️ **Upgrades have a brake**: Switching the formula requires re-scoring all historical samples — only released if it ranks more accurately than the old. Plus a cross-model independent audit — **so you can't fool yourself.**
+
+🪒 **The rubric is a workbench, not a museum**: Observations refuted by data get deleted; observations absorbed into formal dimensions also get deleted. It only holds what's most useful right now.
+
+---
+
+## 📦 Install
 
 ```bash
 git clone https://github.com/XBuilderLAB/cheat-on-content.git
@@ -82,60 +106,62 @@ cd cheat-on-content
 bash install.sh
 ```
 
-13 个子 skill 软链接到 `~/.claude/skills/`。装一次，所有内容项目都能用。
+13 sub-skills are symlinked into your agent's skill directory. One install, every content project gets it.
 
-### Codex
+**Supported agents**: Claude Code (default) · Codex (`bash install.sh --codex`) · Both (`bash install.sh --all`)
 
-```bash
-git clone https://github.com/XBuilderLAB/cheat-on-content.git
-cd cheat-on-content
-bash install.sh --codex
-```
-
-Codex 会安装根路由 skill `cheat-on-content` + 13 个子 skill 到 `~/.codex/skills/`。如果当前 Codex 会话看不到新 skill，重开一次会话。
-
-> 同时安装 Claude Code + Codex：`bash install.sh --all`
+> Frozen version: `bash install.sh --copy` / `bash install.sh --codex --copy`
 >
-> 冻结版本：`bash install.sh --copy` / `bash install.sh --codex --copy`
->
-> 卸载：`bash uninstall.sh` / `bash uninstall.sh --codex`（不动你的内容数据）
+> Uninstall: `bash uninstall.sh` / `bash uninstall.sh --codex` (your content data is not touched)
 
 ---
 
-## 🚀 第一次跑
+## 🚀 First run
 
-在你的内容项目目录里开 Claude Code 或 Codex，说：
+In your content project directory, open a skill-compatible agent and say:
 
 ```
 初始化 cheat-on-content
 ```
 
-5 个 yes/no 搞定 onboarding。**强烈建议导对标账号**——5-10 条样本 → 工具立刻有 anchor，不然前 5 篇预测精度 ±50%。
+(or `init cheat-on-content`)
+
+Five yes/no questions complete onboarding. **Strongly recommend importing a benchmark account** — 5–10 samples and the tool gets an anchor immediately. Without one, your first 5 predictions land at ±50% precision.
 
 ---
 
-## ⚡ 日常用法
+## ⚡ Daily use
 
 ```
-打分这篇 scripts/<...>.md         → 评分
-启动预测 scripts/<...>.md         → 盲预测 + 决策日志
-拍了 scripts/<...>.md            → 建 video folder + buffer +1
-已发布 https://...                → buffer -1
-复盘 videos/<...>/                → T+3d 数据回收 + 复盘
-状态 / 抓热点 / 找选题 / 升级 rubric / 找对标
+score this scripts/<...>.md       → grade only
+start prediction scripts/<...>.md → blind prediction + decision log
+shot scripts/<...>.md             → create video folder + buffer +1
+shipped https://...                → buffer -1
+retro videos/<...>/                → T+3d data + retrospective
+status / fetch trends / find topic / bump rubric / find benchmark
 ```
 
-Claude Code 每次开会话 hook 自动报告 buffer + 待复盘 + top 候选——你不用主动问。Codex 当前没有等价 hook 自动注入，直接说 `状态` 可获得同样看板。
+Hook-aware agents auto-report buffer + pending retros + top candidates at every session start — no need to ask. Other agents: just say `status`.
 
-完整工作流 + 子 skill 细节见 [SKILL.md](SKILL.md)。
+Full workflow + sub-skill details: see [SKILL.md](SKILL.md).
+
+---
+
+## 📈 Star History
+
+<a href="https://star-history.com/#XBuilderLAB/cheat-on-content&Date">
+  <img src="https://api.star-history.com/svg?repos=XBuilderLAB/cheat-on-content&type=Date" alt="Star History Chart" width="720">
+</a>
 
 ---
 
 ## 📜 License
 
-MIT。商用、改造、闭源接入都行。
+MIT. Commercial use, modification, closed-source integration — all fine.
 
 ---
 
-*这是作弊吗？计算器也是。Google 也是。
-未来不奖励努力——它奖励先看见规律的人。*
+*Is this cheating? So was the calculator. So was Google.*
+*The future doesn't reward effort — it rewards those who see the pattern first.*
+
+*You reading this line — that's predicted too.*

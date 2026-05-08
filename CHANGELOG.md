@@ -8,6 +8,35 @@ All notable changes to cheat-on-content will be documented here.
 
 ## [Unreleased]
 
+### Changed — README / cheat-init voice 重塑（递归宿命感）
+
+- **README tagline 改递归宿命版**："你正在读这段话——这个 skill 预测过了。... 你停下来思考'这是不是真的'——也在它的预测里。" 替代原"凭感觉发是猜，这套让你算"框架
+- **新增 🌀 起源段**：创作者本人视频脚本精华（一阶宿命 → 二阶宿命的觉醒）作为 README 中段叙事 hook
+- **closing tagline 加 callback**："你看到这一行——也是它预测的"——首尾呼应把读者卡进预测循环
+- **cheat-init Phase 1 首屏同步**：从 "做内容本质上就是作弊" 改成 "你的下一条内容已经在改写 3 个月后的你。规律是客观存在的，区别是你看见还是没看见。这套让你看见。"
+- **GitHub repo description** 同步递归版
+
+### Changed — 多语言 README 拆分
+
+- `README.md` 现为**英文默认**——国际用户首屏
+- `docs/README_CN.md` 为简体中文（原 README 内容 + 宿命感重塑）
+- 两份顶部加 language switcher（QuantDinger 风格）
+- logo 路径 + 内部链接按相对路径调整
+
+### Added — Star History 图表
+
+两份 README 末尾加 [star-history.com](https://star-history.com) 图表，社区可视化项目热度。
+
+### Changed — 弱化 Claude Code 强调
+
+README 安装段从"### Claude Code"+"### Codex"双标题，改为"默认 + supported agents 列表"——把 skill 包装成跨 agent 的工作流而不是 Claude Code 专属。日常用法段同步换成 "skill-compatible agent" 泛称。
+
+### Added — Terminal-style logo SVG
+
+- `docs/logo.svg`（1.9KB 原生 SVG，无图片资源依赖）
+- 终端窗口 + traffic lights + `$ fatesnail` 命令行 + 5 阶段循环 + `// cheat on content` 注释
+- README hero 居中嵌入
+
 ### Added — cheat-seed Mode 重构 + 双热点工具集成
 
 **问题**：原 Mode B 给"a/b/c 三种例子"让用户讲经历——但同样的话术对**有方向但抽象的用户**（"想做职场"）和**完全没想法的用户**（"帮我想"）一视同仁，前者其实有真动机不需要 AI 列举，后者需要的是外部素材而不是 prompt。
