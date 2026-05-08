@@ -5,7 +5,7 @@
 <h2 align="center">Cheat on Content</h2>
 
 <p align="center">
-A skill that turns every post into a calibrated experiment.
+For content creators — a skill that turns every post into a calibrated experiment.
 </p>
 
 <p align="center">

@@ -5,7 +5,7 @@
 <h2 align="center">Cheat on Content</h2>
 
 <p align="center">
-把每一条内容变成可校准实验的 skill。
+网红作弊器 — 把每一条内容变成可校准的实验。
 </p>
 
 <p align="center">
