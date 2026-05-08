@@ -2,10 +2,10 @@
   <img src="logo.svg" alt="Cheat on Content" width="720">
 </h1>
 
+<h2 align="center">Cheat on Content</h2>
+
 <p align="center">
-  <a href="../README.md"><strong>English</strong></a>
-  &nbsp;·&nbsp;
-  <strong>简体中文</strong>
+把每一条内容变成可校准实验的 skill。
 </p>
 
 <p align="center">
@@ -13,6 +13,12 @@
 它把博主的每一次"我感觉这条会爆"变成可校准的实验。<br>
 我用它一个月涨粉 100w。它说我会写这段，我就写了。<br>
 你停下来思考"这是不是真的"——也在它的预测里。
+</p>
+
+<p align="center">
+  <a href="../README.md"><strong>English</strong></a>
+  &nbsp;·&nbsp;
+  <strong>简体中文</strong>
 </p>
 
 <p align="center">

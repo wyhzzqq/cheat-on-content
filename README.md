@@ -2,10 +2,10 @@
   <img src="docs/logo.svg" alt="Cheat on Content" width="720">
 </h1>
 
+<h2 align="center">Cheat on Content</h2>
+
 <p align="center">
-  <strong>English</strong>
-  &nbsp;·&nbsp;
-  <a href="docs/README_CN.md"><strong>简体中文</strong></a>
+A skill that turns every post into a calibrated experiment.
 </p>
 
 <p align="center">
@@ -13,6 +13,12 @@ You're reading this. The skill predicted it.<br>
 It turns every "I feel this will go viral" into a calibrated experiment.<br>
 It took me from zero to 1M followers in a month. It said I'd write this. I did.<br>
 Your doubt — predicted too.
+</p>
+
+<p align="center">
+  <strong>English</strong>
+  &nbsp;·&nbsp;
+  <a href="docs/README_CN.md"><strong>简体中文</strong></a>
 </p>
 
 <p align="center">
