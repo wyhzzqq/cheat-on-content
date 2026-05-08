@@ -1,11 +1,18 @@
-# Cheat on Content
+<h1 align="center">
+  <img src="docs/logo.svg" alt="Cheat on Content" width="720">
+</h1>
 
-> 做内容本质上就是作弊——谁先看穿规律，谁就拿走流量。
-> 凭感觉发是**猜**，这套让你**算**。也叫**网红外挂**。
-> 我用它一个月涨粉 100w —— 不是灵感，是系统。
+<p align="center">
+做内容本质上就是作弊——谁先看穿规律，谁就拿走流量。<br>
+凭感觉发是<b>猜</b>，这套让你<b>算</b>。也叫<b>网红外挂</b>。<br>
+我用它一个月涨粉 100w —— 不是灵感，是系统。
+</p>
 
-[![Version](https://img.shields.io/badge/version-v0.1.0-orange)](CHANGELOG.md)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<p align="center">
+<a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-v0.1.0-orange" alt="Version"></a>
+&nbsp;
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+</p>
 
 ---
 
