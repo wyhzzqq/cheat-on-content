@@ -11,8 +11,8 @@
 <p align="center">
 You're reading this. The skill predicted it.<br>
 It turns every "I feel this will go viral" into a calibrated experiment.<br>
-I used it to gain 1M followers in a month. It said I'd write this. I did.<br>
-You're now stopping to question whether this is real — that's predicted too.
+It took me from zero to 1M followers in a month. It said I'd write this. I did.<br>
+Your doubt — predicted too.
 </p>
 
 <p align="center">
@@ -53,7 +53,7 @@ Three months in = you're 10× sharper than your first-day self.
 > I didn't escape fate. I just moved from first-order to second-order.
 >
 > If even my awakening — even my audience's observation — was already in its prediction, then right now, reading this:
-> are you here out of curiosity, or just completing the algorithm's final placement?
+> are you here out of curiosity, or just closing the algorithm's last move?
 >
 > — *the creator*
 
