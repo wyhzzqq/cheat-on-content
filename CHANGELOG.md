@@ -8,6 +8,17 @@ All notable changes to cheat-on-content will be documented here.
 
 ## [Unreleased]
 
+### Fixed — douyin-session 运行时路径隐私漏洞（@level5Ninja [#16](https://github.com/XBuilderLAB/cheat-on-content/pull/16)）
+
+**问题**：douyin-session adapter 把 `.auth/`（**含抖音登录 cookie**）、debug 截图、report 写进 **skill 源码目录** 而不是用户内容项目——symlink 安装时，用户的会话凭据会落在 cheat-on-content repo 里，有被 commit 的风险。meta-logging hook 还把每条 user prompt 前 120 字存进 `usage.jsonl`，采集过度。
+
+**修复**：
+- 新增 `adapters/perf-data/douyin-session/paths.py` —— 运行时路径 helper（`runtime_project_root` / `auth_dir` / `debug_dir` / `videos_dir`），用 `CHEAT_PROJECT_ROOT` env var + cwd fallback
+- `.auth/` → 用户内容项目根；debug 产物 → `.cheat-cache/douyin-session-debug/`；report/script → 用户项目 `videos/`（不再散落在 skill 源码树）
+- `run.sh` export `CHEAT_PROJECT_ROOT`
+- meta-logging hook 不再存 prompt 摘要——改成只记 `prompt_present`（bool）+ `prompt_chars`（长度）
+- docs（adapter README + state-management.md）同步
+
 ### Fixed — cheat-shoot DIFF_METRIC 在口语化场景的 v2 误触发（**BREAKING for v2-trigger-logic**）
 
 **问题**：cheat-shoot Phase 3b 用 line-level unified diff 算 `diff_pct = (added + removed) * 100 / orig_lines`。但**创作者真实场景**——draft 是 markdown 长句（一行 ~50 字），拍摄稿是 whisper 转录的口语化短断句（每行 ~5-10 字）——同样的内容会 inflate diff_pct 到 100-200%，触发本不该的 v2 重判。
